@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mithril | Commercial Electricity Optimisation</title>
+
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --bg2:#0f172a;
+      --card:#111c33;
+      --card2:#0f1a30;
+      --border:#24314d;
+
+      --text:#e6edf7;
+      --muted:#8ea0bf;
+
+      --accent:#22c55e;
+      --accent2:#16a34a;
+
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --info:#60a5fa;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 16px;
+      --radius2: 12px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(34,197,94,.18), transparent 55%),
+                  radial-gradient(900px 500px at 85% 10%, rgba(96,165,250,.14), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg2));
+      color: var(--text);
+      min-height:100vh;
+    }
+
+    a{ color:inherit; }
+
+    .app{
+      display:flex;
+      min-height:100vh;
+    }
+
+    /* sidebar */
+    .sidebar{
+      width: 280px;
+      background: linear-gradient(180deg, rgba(11,18,32,.9), rgba(7,11,20,.92));
+      border-right: 1px solid var(--border);
+      padding: 18px 16px;
+      position: sticky;
+      top:0;
+      height:100vh;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 10px 18px 10px;
+      border-bottom: 1px solid rgba(36,49,77,.7);
+      margin-bottom: 14px;
+    }
+
+    .logo{
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(34,197,94,.9), rgba(96,165,250,.7));
+      box-shadow: 0 14px 40px rgba(34,197,94,.15);
+    }
+
+    .brand h1{
+      font-size: 1.05rem;
+      margin:0;
+      letter-spacing: 1px;
+    }
+
+    .brand p{
+      margin:0;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding: 12px 6px;
+    }
+
+    .nav button{
+      width:100%;
+      border:1px solid rgba(36,49,77,.9);
+      background: rgba(15,23,42,.55);
+      color: var(--text);
+      padding: 12px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      text-align:left;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      transition: .18s ease;
+    }
+
+    .nav button:hover{
+      border-color: rgba(34,197,94,.6);
+      transform: translateY(-1px);
+    }
+
+    .nav button.active{
+      border-color: rgba(34,197,94,.95);
+      background: linear-gradient(180deg, rgba(34,197,94,.14), rgba(15,23,42,.6));
+    }
+
+    .nav .label{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .nav .label span:nth-child(1){
+      font-size: .92rem;
+      font-weight: 650;
+    }
+
+    .nav .label span:nth-child(2){
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    .pill{
+      font-size:.72rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(36,49,77,.8);
+      color: var(--muted);
+    }
+
+    .sidebar-footer{
+      position:absolute;
+      bottom:18px;
+      left:16px;
+      right:16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(36,49,77,.7);
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.4;
+    }
+
+    /* main content */
+    .main{
+      flex:1;
+      padding: 22px 26px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding: 14px 16px;
+      border: 1px solid rgba(36,49,77,.7);
+      border-radius: var(--radius);
+      background: rgba(15,23,42,.55);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar h2{
+      margin:0;
+      font-size: 1.05rem;
+      letter-spacing: .3px;
+    }
+
+    .topbar .sub{
+      margin-top: 3px;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .btn{
+      border: 1px solid rgba(36,49,77,.85);
+      background: rgba(7,11,20,.65);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 650;
+      font-size: .9rem;
+      transition: .18s ease;
+    }
+
+    .btn:hover{
+      border-color: rgba(96,165,250,.6);
+      transform: translateY(-1px);
+    }
+
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(22,163,74,.85));
+      border-color: rgba(34,197,94,.9);
+      color: #071114;
+    }
+
+    .btn.primary:hover{
+      filter: brightness(1.03);
+      border-color: rgba(34,197,94,1);
+    }
+
+    .btn.danger{
+      border-color: rgba(239,68,68,.6);
+      color: rgba(239,68,68,.9);
+      background: rgba(239,68,68,.05);
+    }
+
+    .content{
+      margin-top: 18px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(17,28,51,.75), rgba(15,26,48,.65));
+      border: 1px solid rgba(36,49,77,.8);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3{
+      margin:0 0 8px 0;
+      font-size: 1rem;
+      letter-spacing: .2px;
+    }
+
+    .muted{
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+
+    .divider{
+      height: 1px;
+      background: rgba(36,49,77,.75);
+      margin: 14px 0;
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .kpi{
+      flex:1;
+      min-width: 220px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(36,49,77,.85);
+      background: rgba(7,11,20,.35);
+    }
+
+    .kpi .label{
+      color: var(--muted);
+      font-size: .78rem;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+
+    .kpi .value{
+      font-size: 2rem;
+      margin-top: 6px;
+      font-weight: 850;
+    }
+
+    .kpi .value.green{ color: rgba(34,197,94,.95); }
+    .kpi .value.red{ color: rgba(239,68,68,.95); }
+    .kpi .value.blue{ color: rgba(96,165,250,.95); }
+
+    .mini{
+      margin-top: 6px;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    /* upload module */
+    .upload-area{
+      border: 1px dashed rgba(142,160,191,.5);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: rgba(7,11,20,.35);
+    }
+
+    .upload-area:hover{
+      border-color: rgba(34,197,94,.55);
+    }
+
+    .upload-title{
+      font-weight: 750;
+      margin-bottom: 6px;
+    }
+
+    input[type=file]{
+      display:none;
+    }
+
+    .tagrow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+
+    .tag{
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(36,49,77,.9);
+      color: var(--muted);
+      font-size: .8rem;
+      background: rgba(15,23,42,.4);
+    }
+
+    /* table */
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(36,49,77,.85);
+    }
+
+    th, td{
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(36,49,77,.65);
+      text-align:left;
+      font-size: .9rem;
+    }
+
+    th{
+      color: var(--muted);
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      background: rgba(7,11,20,.5);
+    }
+
+    tr:last-child td{
+      border-bottom:none;
+    }
+
+    .conf{
+      font-weight: 800;
+    }
+
+    .conf.good{ color: rgba(34,197,94,.95); }
+    .conf.mid{ color: rgba(245,158,11,.95); }
+    .conf.bad{ color: rgba(239,68,68,.95); }
+
+    /* rec list */
+    .rec{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(36,49,77,.85);
+      background: rgba(7,11,20,.35);
+      margin-top: 12px;
+    }
+
+    .rec .title{
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .rec .desc{
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .rec .impact{
+      text-align:right;
+      min-width: 160px;
+    }
+
+    .rec .impact .amt{
+      font-weight: 950;
+      font-size: 1.15rem;
+      color: rgba(34,197,94,.95);
+    }
+
+    .rec .impact .small{
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .badgeP{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 750;
+      border: 1px solid rgba(36,49,77,.9);
+      margin-bottom: 8px;
+    }
+
+    .badgeP.high{
+      color: rgba(239,68,68,.95);
+      border-color: rgba(239,68,68,.55);
+      background: rgba(239,68,68,.07);
+    }
+
+    .badgeP.mid{
+      color: rgba(245,158,11,.95);
+      border-color: rgba(245,158,11,.55);
+      background: rgba(245,158,11,.07);
+    }
+
+    .badgeP.low{
+      color: rgba(96,165,250,.95);
+      border-color: rgba(96,165,250,.55);
+      background: rgba(96,165,250,.07);
+    }
+
+    /* loader */
+    .loaderWrap{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(36,49,77,.85);
+      background: rgba(7,11,20,.35);
+      margin-top: 12px;
+    }
+
+    .spinner{
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid rgba(142,160,191,.35);
+      border-top: 3px solid rgba(34,197,94,.95);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin{
+      from{ transform: rotate(0deg); }
+      to{ transform: rotate(360deg); }
+    }
+
+    .hidden{ display:none !important; }
+
+    /* responsive */
+    @media(max-width: 980px){
+      .sidebar{ display:none; }
+      .grid{ grid-template-columns: 1fr; }
+      .main{ padding: 18px 14px; }
+    }
+
+    /* slider */
+    input[type=range]{
+      width:100%;
+      margin-top: 10px;
+    }
+
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media(max-width: 980px){
+      .twoCol{ grid-template-columns: 1fr; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>MITHRIL</h1>
+          <p>Energy Cost Optimisation</p>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="active" data-screen="onboarding">
+          <div class="label">
+            <span>01 — data ingestion</span>
+            <span>upload + profile selection</span>
+          </div>
+          <div class="pill">input</div>
+        </button>
+
+        <button data-screen="review">
+          <div class="label">
+            <span>02 — extraction review</span>
+            <span>confidence validation</span>
+          </div>
+          <div class="pill">audit</div>
+        </button>
+
+        <button data-screen="dashboard">
+          <div class="label">
+            <span>03 — dashboard</span>
+            <span>drivers + recommendations</span>
+          </div>
+          <div class="pill">insight</div>
+        </button>
+
+        <button data-screen="tou">
+          <div class="label">
+            <span>04 — ToU advisor</span>
+            <span>shiftable load modelling</span>
+          </div>
+          <div class="pill">tariff</div>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <div><b>product:</b> mithril</div>
+        <div>no database dependency yet</div>
+        <div style="margin-top:8px;">build: v0.2 mock</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div>
+          <h2 id="topTitle">01 — ingestion</h2>
+          <div class="sub" id="topSub">upload pdf/csv or enter bill fields manually</div>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn" id="btnReset">reset session</button>
+          <button class="btn primary" id="btnNext">next</button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- SCREEN 1: ONBOARDING -->
+        <section id="screen-onboarding">
+          <div class="grid">
+
+            <div class="card">
+              <h3>data ingestion</h3>
+              <p class="muted">
+                upload historical TNB billing exports and the system will reconstruct
+                the bill structure, identify cost drivers, and generate a prioritised savings roadmap.
+              </p>
+
+              <div class="divider"></div>
+
+              <div class="upload-area">
+                <div class="upload-title">upload TNB bill history</div>
+                <div class="muted">supported formats: PDF / CSV (multi-month preferred)</div>
+
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                  <label class="btn primary" for="fileUpload">select file</label>
+                  <input type="file" id="fileUpload" accept=".pdf,.csv" />
+                </div>
+
+    
+              </div>
+
+              <div class="divider"></div>
+
+              <h3>facility profile</h3>
+              <p class="muted">choose the tariff profile for correct reconstruction logic.</p>
+
+              <div class="row">
+                <button class="btn" onclick="setProfile('Commercial MV Tariff')">Commercial MV</button>
+                <button class="btn" onclick="setProfile('Commercial LV Tariff')">Commercial LV</button>
+                <button class="btn" onclick="setProfile('Campus / Multi-Block')">Campus</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <h3>manual entry (fallback)</h3>
+              <p class="muted">for cold-start users without exports. fields are validated later.</p>
+
+              <div class="twoCol">
+                <div>
+                  <label class="muted">monthly kWh</label>
+                  <input id="manualKwh" type="number" placeholder="e.g. 480000"
+                    style="width:100%; margin-top:6px; padding:10px; border-radius:12px; border:1px solid rgba(36,49,77,.9); background:rgba(7,11,20,.45); color:var(--text);" />
+                </div>
+                <div>
+                  <label class="muted">maximum demand (kW)</label>
+                  <input id="manualMd" type="number" placeholder="e.g. 325"
+                    style="width:100%; margin-top:6px; padding:10px; border-radius:12px; border:1px solid rgba(36,49,77,.9); background:rgba(7,11,20,.45); color:var(--text);" />
+                </div>
+                <div>
+                  <label class="muted">power factor</label>
+                  <input id="manualPf" type="number" step="0.01" placeholder="e.g. 0.84"
+                    style="width:100%; margin-top:6px; padding:10px; border-radius:12px; border:1px solid rgba(36,49,77,.9); background:rgba(7,11,20,.45); color:var(--text);" />
+                </div>
+                <div>
+                  <label class="muted">total bill (RM)</label>
+                  <input id="manualBill" type="number" placeholder="e.g. 80000"
+                    style="width:100%; margin-top:6px; padding:10px; border-radius:12px; border:1px solid rgba(36,49,77,.9); background:rgba(7,11,20,.45); color:var(--text);" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+
+              <div class="kpi">
+                <div class="label">selected profile</div>
+                <div class="value blue" id="profileValue">Commercial MV Tariff</div>
+                <div class="mini">tariff assumptions affect reconstruction logic</div>
+              </div>
+
+              <div class="kpi" style="margin-top:12px;">
+                <div class="label">upload status</div>
+                <div class="value" id="uploadStatus">NO DATA</div>
+                <div class="mini" id="uploadMini">awaiting ingestion pipeline</div>
+              </div>
+
+              <div id="uploadLoader" class="loaderWrap hidden">
+                <div class="spinner"></div>
+                <div>
+                  <div style="font-weight:850;">processing pipeline</div>
+                  <div class="muted" id="loaderText">ingesting file…</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <h3>what mithril will compute</h3>
+              <ul class="muted" style="margin:0; padding-left:18px;">
+                <li>cost driver ranking (demand vs consumption vs penalties)</li>
+                <li>optimised operating targets via regression + numerical optimisation</li>
+                <li>ToU switching feasibility (shiftable load modelling)</li>
+                <li>carbon impact estimates (CO₂e avoided)</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SCREEN 2: EXTRACTION REVIEW -->
+        <section id="screen-review" class="hidden">
+          <div class="card">
+            <h3>extraction review</h3>
+            <p class="muted">
+              for PDF inputs, mithril assigns confidence indicators. confirm or correct fields before optimisation.
+              large inconsistencies will trigger reconstruction warnings.
+            </p>
+
+            <div class="divider"></div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>field</th>
+                  <th>extracted value</th>
+                  <th>confidence</th>
+                  <th>action</th>
+                </tr>
+              </thead>
+              <tbody id="reviewTable"></tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <div class="row">
+              <button class="btn" id="btnFlag">flag inconsistency</button>
+              <button class="btn primary" id="btnConfirm">confirm + run optimisation</button>
+            </div>
+
+            <div id="reviewWarn" class="loaderWrap hidden" style="border-color: rgba(239,68,68,.6);">
+              <div style="width:34px; height:34px; border-radius:999px; background:rgba(239,68,68,.15); display:flex; align-items:center; justify-content:center; font-weight:950; color:rgba(239,68,68,.95);">
+                !
+              </div>
+              <div>
+                <div style="font-weight:900;">bill reconstruction discrepancy</div>
+                <div class="muted">computed total differs from stated total. review tariff inputs.</div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SCREEN 3: DASHBOARD -->
+        <section id="screen-dashboard" class="hidden">
+          <div class="card">
+            <h3>optimisation summary</h3>
+            <p class="muted">
+              mithril identifies the current cost baseline and computes optimal operating targets for demand,
+              consumption, and penalty variables. recommendations are prioritised by estimated monthly savings.
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="row">
+              <div class="kpi">
+                <div class="label">current average bill</div>
+                <div class="value red" id="curBill">RM 80,000</div>
+                <div class="mini">baseline monthly expenditure</div>
+              </div>
+
+              <div class="kpi">
+                <div class="label">optimised target (model)</div>
+                <div class="value green" id="optBill">RM 69,600</div>
+                <div class="mini">numerical optimisation estimate</div>
+              </div>
+
+              <div class="kpi">
+                <div class="label">identified savings gap</div>
+                <div class="value green" id="savingsGap">+ RM 10,400</div>
+                <div class="mini" id="co2Impact">≈ 3,200 kg CO₂e avoided</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3>cost driver breakdown</h3>
+            <p class="muted">approximate influence ranking derived from billing structure.</p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>driver</th>
+                  <th>risk level</th>
+                  <th>why it matters</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>maximum demand charges</b></td>
+                  <td><span class="conf bad">HIGH</span></td>
+                  <td class="muted">demand spikes dominate total cost even if kWh is stable</td>
+                </tr>
+                <tr>
+                  <td><b>power factor penalty</b></td>
+                  <td><span class="conf mid">MEDIUM</span></td>
+                  <td class="muted">avoidable surcharge below threshold (0.85)</td>
+                </tr>
+                <tr>
+                  <td><b>tariff selection (ToU)</b></td>
+                  <td><span class="conf mid">MEDIUM</span></td>
+                  <td class="muted">arbitrage possible if off-peak share is high</td>
+                </tr>
+                <tr>
+                  <td><b>energy consumption (kWh)</b></td>
+                  <td><span class="conf good">LOW</span></td>
+                  <td class="muted">stable load indicates optimisation is mostly operational scheduling</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <h3>prioritised action plan</h3>
+
+            <div id="recList"></div>
+
+            <div class="divider"></div>
+
+            <div class="row">
+              <button class="btn" id="btnExport">download report (mock)</button>
+              <button class="btn primary" onclick="goto('tou')">open ToU switching advisor</button>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SCREEN 4: TOU ADVISOR -->
+        <section id="screen-tou" class="hidden">
+          <div class="card">
+            <h3>ToU switching advisor</h3>
+            <p class="muted">
+              estimate savings under Time-of-Use tariffs by modelling how much of your peak load is realistically shiftable.
+              mithril outputs a side-by-side bill comparison.
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="twoCol">
+              <div class="card" style="box-shadow:none;">
+                <h3>shiftable load model</h3>
+                <p class="muted">
+                  move non-critical operations (HVAC startup, pumps, chillers, EV charging, etc.) into off-peak windows.
+                </p>
+
+                <div class="divider"></div>
+
+                <div>
+                  <div class="muted">shiftable consumption (%)</div>
+                  <input type="range" id="shiftSlider" min="0" max="60" value="20" />
+                  <div style="margin-top:6px; font-weight:900;">
+                    <span id="shiftPct">20</span>% shiftable
+                  </div>
+                  <div class="muted" style="margin-top:6px;">
+                    assumption: shifted load moves from peak to off-peak.
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="btn primary" id="btnRecalc">recalculate comparison</button>
+              </div>
+
+              <div class="card" style="box-shadow:none;">
+                <h3>tariff comparison</h3>
+                <p class="muted">estimated monthly totals (mock model).</p>
+
+                <div class="divider"></div>
+
+                <div class="kpi">
+                  <div class="label">current flat tariff</div>
+                  <div class="value red" id="flatCost">RM 80,000</div>
+                  <div class="mini">baseline cost</div>
+                </div>
+
+                <div class="kpi" style="margin-top:12px;">
+                  <div class="label">ToU tariff estimate</div>
+                  <div class="value green" id="touCost">RM 76,100</div>
+                  <div class="mini">with shiftable load assumption</div>
+                </div>
+
+                <div class="kpi" style="margin-top:12px;">
+                  <div class="label">delta</div>
+                  <div class="value green" id="touDelta">+ RM 3,900</div>
+                  <div class="mini">estimated savings from switching</div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="muted">
+                  recommendation logic: if savings are significant + operationally feasible, ToU switching is marked viable.
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row">
+              <button class="btn" onclick="goto('dashboard')">back to dashboard</button>
+              <button class="btn primary">generate ToU appendix (mock)</button>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // -----------------------------
+    // session state (mock)
+    // -----------------------------
+    const state = {
+      profile: "Commercial MV Tariff",
+      uploaded: false,
+      extracted: [
+        { field: "Monthly kWh", value: "480,000", conf: "good" },
+        { field: "Maximum Demand (kW)", value: "325", conf: "bad" },
+        { field: "Power Factor", value: "0.84", conf: "mid" },
+        { field: "Peak/Off-Peak Ratio", value: "60/40", conf: "mid" },
+        { field: "Total Bill (RM)", value: "80,000", conf: "good" }
+      ],
+      recs: [
+        {
+          priority: "high",
+          title: "Cap Maximum Demand at 260 kW",
+          desc: "current peaks hit 325 kW. stagger chiller startup sequencing by 30 minutes to flatten the load curve.",
+          saving: "RM 5,800",
+          tag: "demand management"
+        },
+        {
+          priority: "high",
+          title: "Eliminate Power Factor Surcharge",
+          desc: "power factor sits at 0.84 (below 0.85 threshold). install a 100 kVAR capacitor bank. payback < 1 year.",
+          saving: "RM 608",
+          tag: "penalty elimination"
+        },
+        {
+          priority: "mid",
+          title: "Execute ToU Tariff Switch",
+          desc: "off-peak ratio suggests tariff arbitrage is feasible. use ToU advisor to quantify shiftable load impact.",
+          saving: "RM 3,992",
+          tag: "tariff optimisation"
+        }
+      ]
+    };
+
+    const screens = ["onboarding", "review", "dashboard", "tou"];
+
+    const titleMap = {
+      onboarding: ["01 — ingestion", "upload pdf/csv or enter bill fields manually"],
+      review: ["02 — extraction review", "validate extracted values before optimisation"],
+      dashboard: ["03 — dashboard", "cost drivers, optimisation targets, prioritised actions"],
+      tou: ["04 — ToU advisor", "shiftable load modelling + tariff comparison"]
+    };
+
+    function setProfile(p){
+      state.profile = p;
+      document.getElementById("profileValue").innerText = p;
+    }
+
+    function goto(name){
+      screens.forEach(s => {
+        document.getElementById("screen-" + s).classList.add("hidden");
+      });
+
+      document.getElementById("screen-" + name).classList.remove("hidden");
+
+      document.getElementById("topTitle").innerText = titleMap[name][0];
+      document.getElementById("topSub").innerText = titleMap[name][1];
+
+      // sidebar nav highlight
+      document.querySelectorAll(".nav button").forEach(btn => {
+        btn.classList.remove("active");
+        if(btn.dataset.screen === name) btn.classList.add("active");
+      });
+
+      // adjust next button behavior
+      document.getElementById("btnNext").onclick = () => {
+        const idx = screens.indexOf(name);
+        const next = screens[Math.min(idx+1, screens.length-1)];
+        goto(next);
+      };
+    }
+
+    // sidebar nav click
+    document.querySelectorAll(".nav button").forEach(btn => {
+      btn.addEventListener("click", () => goto(btn.dataset.screen));
+    });
+
+    function renderReview(){
+      const tbody = document.getElementById("reviewTable");
+      tbody.innerHTML = "";
+
+      state.extracted.forEach((row) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td><b>${row.field}</b></td>
+          <td>${row.value}</td>
+          <td><span class="conf ${row.conf}">${row.conf.toUpperCase()}</span></td>
+          <td><button class="btn">edit</button></td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderRecs(){
+      const wrap = document.getElementById("recList");
+      wrap.innerHTML = "";
+
+      state.recs.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "rec";
+
+        const badge = r.priority === "high"
+          ? `<span class="badgeP high">HIGH PRIORITY</span>`
+          : r.priority === "mid"
+          ? `<span class="badgeP mid">MEDIUM PRIORITY</span>`
+          : `<span class="badgeP low">LOW PRIORITY</span>`;
+
+        div.innerHTML = `
+          <div>
+            ${badge}
+            <div class="title">${r.title}</div>
+            <div class="desc">${r.desc}</div>
+            <div class="muted" style="margin-top:8px;">category: ${r.tag}</div>
+          </div>
+          <div class="impact">
+            <div class="amt">${r.saving}</div>
+            <div class="small">est. monthly saving</div>
+          </div>
+        `;
+
+        wrap.appendChild(div);
+      });
+    }
+
+    function simulatePipeline(){
+      state.uploaded = true;
+
+      const loader = document.getElementById("uploadLoader");
+      const status = document.getElementById("uploadStatus");
+      const mini = document.getElementById("uploadMini");
+      const loaderText = document.getElementById("loaderText");
+
+      status.innerText = "PROCESSING";
+      status.style.color = "rgba(245,158,11,.95)";
+      mini.innerText = "running extraction + validation pipeline…";
+      loader.classList.remove("hidden");
+
+      setTimeout(() => loaderText.innerText = "extracting billing fields (OCR fallback)…", 700);
+      setTimeout(() => loaderText.innerText = "assigning confidence scores…", 1500);
+      setTimeout(() => loaderText.innerText = "reconstructing tariff totals…", 2300);
+      setTimeout(() => loaderText.innerText = "preparing optimisation dataset…", 3100);
+
+      setTimeout(() => {
+        loader.classList.add("hidden");
+        status.innerText = "READY";
+        status.style.color = "rgba(34,197,94,.95)";
+        mini.innerText = "data extracted. review required before optimisation.";
+
+        renderReview();
+        goto("review");
+      }, 3900);
+    }
+
+    // upload event
+    document.getElementById("fileUpload").addEventListener("change", (e) => {
+      if(e.target.files.length > 0) simulatePipeline();
+    });
+
+    document.getElementById("btnSimulate").addEventListener("click", simulatePipeline);
+
+    // review buttons
+    document.getElementById("btnFlag").addEventListener("click", () => {
+      document.getElementById("reviewWarn").classList.remove("hidden");
+    });
+
+    document.getElementById("btnConfirm").addEventListener("click", () => {
+      renderRecs();
+      goto("dashboard");
+    });
+
+    // export mock
+    document.getElementById("btnExport").addEventListener("click", () => {
+      alert("mock export: PDF report generation will be implemented backend-side.");
+    });
+
+    // reset session
+    document.getElementById("btnReset").addEventListener("click", () => {
+      location.reload();
+    });
+
+    // ToU logic
+    function recalcTou(){
+      const pct = parseInt(document.getElementById("shiftSlider").value);
+      document.getElementById("shiftPct").innerText = pct;
+
+      const baseline = 80000;
+      const savings = Math.round((pct / 60) * 5200); // fake curve
+      const tou = baseline - savings;
+
+      document.getElementById("flatCost").innerText = `RM ${baseline.toLocaleString()}`;
+      document.getElementById("touCost").innerText = `RM ${tou.toLocaleString()}`;
+      document.getElementById("touDelta").innerText = `+ RM ${savings.toLocaleString()}`;
+    }
+
+    document.getElementById("shiftSlider").addEventListener("input", recalcTou);
+    document.getElementById("btnRecalc").addEventListener("click", recalcTou);
+
+    // default init
+    renderReview();
+    renderRecs();
+    recalcTou();
+
+    // default next behavior
+    document.getElementById("btnNext").onclick = () => goto("review");
+  </script>
+
+</body>
+</html>
